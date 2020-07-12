@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -Eeuxo pipefail
+
+die() {
+    echo "$@"
+    exit 1
+}
+
+get_field() {
+    jq --raw-output ".[\"$2\"]" <(echo "$1")
+}
+
+main () {
+    local root="$(git rev-parse --show-toplevel)"
+    local index_page="$root/posts/pages/index.html"
+    local meta_file="$root/posts/meta.json"
+    local size="$(jq 'length' "$meta_file")"
+    local year=0
+
+    cat "$root/posts/template/index_header.html" > "$index_page"
+
+    while read meta; do
+        local title="$(get_field "$meta" "title")"
+        local author="$(get_field "$meta" "author")"
+        local uploaded="$(get_field "$meta" "uploaded")"
+        local new_year="$(get_field "$meta" "year")"
+
+        if [ $year != $new_year ]; then
+            echo "        NEW YEAR: $new_year<br>" >> "$index_page"
+            year="$new_year"
+        fi
+
+        sed "$root/posts/template/index_entry.html" \
+            -e "s/<!-- TITLE PLACEHOLDER -->/$title/" \
+            -e "s/<!-- AUTHOR PLACEHOLDER -->/$author/" \
+            -e "s/<!-- UPLOADED PLACEHOLDER -->/$uploaded/" >> "$index_page"
+
+    done <<< "$(jq -c '.[]' "$meta_file")"
+
+    cat "$root/posts/template/index_footer.html" >> "$index_page"
+}
+
+main "$@"
+

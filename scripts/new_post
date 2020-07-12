@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#
+# Create a new post in the system. Requires jq to be installed.
+# usage: ./new_post "Post Title"
+#
+
+set -Eeuxo pipefail
+
+die() {
+    echo "$@"
+    exit 1
+}
+
+main () {
+    local root="$(git rev-parse --show-toplevel)"
+    local filename="$(echo $1 | tr ' ' '_' | tr '[:upper:]' '[:lower:]')"
+    local post="$root/posts/content/$filename.md"
+    local meta_file="$root/posts/meta.json"
+    local tmp_meta_file="$(mktemp)"
+
+    local date="$(date "+%B %d, %Y, %-I:%M %P")"
+    local year="$(date "+%Y")"
+    local month="$(date "+%B")"
+    local month_num="$(date "+%-m")"
+    local hour="$(date "+%H")"
+    local minute="$(date "+%M")"
+    local day="$(date "+%d")"
+
+    [ ! -f "$meta_file" ] && echo "[]" > "$meta_file"
+
+    local new_meta="[{
+            \"author\": \"Brendan Dougherty\",
+            \"title\": \"$1\",
+            \"post\": \"$post\",
+            \"uploaded\": \"$date\",
+            \"year\": \"$year\",
+            \"month\": \"$month\",
+            \"day\": \"$day\",
+            \"last_updated\": \"$date\",
+            \"tags\": [],
+            \"sort_key\": [$year, $month_num, $day, $hour, $minute]
+        }]"
+
+    jq ". + $new_meta | sort_by(.sort_key) | reverse" "$meta_file" > "$tmp_meta_file"
+    mv "$tmp_meta_file" "$meta_file"
+
+    touch "$post"
+}
+
+main "$@"
+
