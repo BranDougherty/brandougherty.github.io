@@ -223,6 +223,15 @@ gen_sitemap() {
     } > "$sitemap"
 }
 
+deploy() {
+    tmp_dir="$(mktemp -d)"
+    cp -r "$site_root" "$tmp_dir"
+    git checkout master
+    rm -rf "$root/*"
+    cp -r "$tmp_dir/wwwroot/*" "$root"
+    git add --all
+}
+
 main() {
     [ ! -f "$meta_file" ] && {
         printf "[]" > "$meta_file"
@@ -261,6 +270,9 @@ main() {
         "gen_sitemap")
             sort_meta_file
             gen_sitemap
+            ;;
+        "deploy")
+            deploy
             ;;
         *)
             usage
