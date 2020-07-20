@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# This is a wrapper script for entr to call
+
+root="$(git rev-parse --show-toplevel)"
+"$root/scripts/blog" full_update
+notify-send "full_update done"
+

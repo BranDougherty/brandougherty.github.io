@@ -20,7 +20,7 @@ die() {
 }
 
 get_filename() {
-    echo "$1" | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+    printf "%s" "$1" | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
 }
 
 get_year() {
@@ -66,13 +66,15 @@ get_metas() {
 }
 
 gen_homepage() {
-    home_page="$site_root/index.html"
+    homepage="$site_root/index.html"
 
-    sed "$template_dir/page_header.html" \
-        -e "s|<!-- TITLE PLACEHOLDER -->|Home|" > "$home_page"
+    {
+        sed "$template_dir/page_header.html" \
+            -e "s|<!-- TITLE PLACEHOLDER -->|Home|"
 
-    cat "$template_dir/homepage.html" \
-        "$template_dir/page_footer.html" >> "$home_page"
+        cat "$template_dir/homepage.html" \
+            "$template_dir/page_footer.html"
+    } > "$homepage"
 }
 
 insert_new_post() {
@@ -140,13 +142,15 @@ gen_blog_index() {
         sed "$template_dir/page_header.html" \
             -e "s|<!-- TITLE PLACEHOLDER -->|Blog Index|"
 
+        cat "$template_dir/blog_index_header.html"
+
         metas="$(get_metas)"
         for meta in $metas; do
             title="$(get_field "$meta" "title")"
             date="$(get_field "$meta" "uploaded")"
             new_year="$(get_year "$date")"
             display_date="$(get_index_date "$date")"
-            filename="$(printf "%s" "$title" | tr ' ' '_' | tr '[:upper:]' '[:lower:]').html"
+            filename="$(get_filename "$title").html"
             link="/blog/posts/$filename"
 
             if [ "$year" != "$new_year" ]; then
