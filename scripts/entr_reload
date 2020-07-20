@@ -1,0 +1,58 @@
+#!/bin/sh
+
+#
+# This script uses entr to automatically regenerate content
+# when the source files change.
+#
+
+set -e
+
+root="$(git rev-parse --show-toplevel)"
+
+sigint() {
+    pkill entr
+}
+
+main() {
+    trap 'sigint' INT TERM
+
+    (while true; do
+        find "$root/site/content" -name '*.md' \
+            | entr -p -d "$root/scripts/gen_pages_notify" >/dev/null
+    done) &
+
+    printf "%s\n%s" \
+        "$root/site/template/post_header.html" \
+        "$root/site/template/disqus_thread.html" \
+        | entr -p "$root/scripts/gen_pages_notify" &
+
+    printf "%s" \
+        "$root/site/template/homepage.html" \
+        | entr -p "$root/scripts/gen_homepage_notify" &
+
+    printf "%s\n%s" \
+        "$root/site/template/page_header.html" \
+        "$root/site/template/page_footer.html" \
+        | entr -p "$root/scripts/gen_all_pages_notify" &
+
+    printf "%s\n%s\n%s" \
+        "$root/site/template/rss_header.xml" \
+        "$root/site/template/rss_item.xml" \
+        "$root/site/template/rss_footer.xml" \
+        | entr -p "$root/scripts/gen_rss_notify" &
+
+    printf "%s\n%s\n%s" \
+        "$root/site/template/sitemap_header.xml" \
+        "$root/site/template/sitemap_item.xml" \
+        "$root/site/template/sitemap_footer.xml" \
+        | entr -p "$root/scripts/gen_sitemap_notify" &
+
+    printf "%s" \
+        "$root/site/meta.json" \
+        | entr -p "$root/scripts/full_update_notify" &
+
+    wait
+}
+
+main "$@"
+

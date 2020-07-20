@@ -1,0 +1,268 @@
+#!/bin/sh -e
+
+root="$(git rev-parse --show-toplevel)"
+site_root="$root/site/wwwroot"
+blog_root="$site_root/blog"
+post_dir="$blog_root/posts"
+content_dir="$root/site/content"
+template_dir="$root/site/template"
+meta_file="$root/site/meta.json"
+urlroot="https://brandougherty.github.io"
+
+usage() {
+    echo "TODO: implement usage"
+    exit 1
+}
+
+die() {
+    echo "$@"
+    exit 1
+}
+
+get_filename() {
+    echo "$1" | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+}
+
+get_year() {
+    date --date="@$1" "+%Y"
+}
+
+get_index_date() {
+    date --date="@$1" "+%b %d"
+}
+
+get_post_date() {
+    date --date="@$1" "+%b %d, %Y"
+}
+
+get_iso_8601() {
+    date --date="@$1" --iso-8601
+}
+
+get_rfc_822() {
+    date --date="@$1" "+%a, %d %b %Y %H:%M:%S %z"
+}
+
+get_field() {
+    printf "%s" "$1" | jq --raw-output ".[\"$2\"]"
+}
+
+insert_new_post_in_meta_file() {
+    new_meta="$1"
+
+    tmp_meta_file="$(mktemp)"
+    jq ". + $new_meta | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
+    mv "$tmp_meta_file" "$meta_file"
+}
+
+sort_meta_file() {
+    tmp_meta_file="$(mktemp)"
+    jq ". | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
+    mv "$tmp_meta_file" "$meta_file"
+}
+
+get_metas() {
+    jq -c ".[]" "$meta_file"
+}
+
+gen_homepage() {
+    home_page="$site_root/index.html"
+
+    sed "$template_dir/page_header.html" \
+        -e "s|<!-- TITLE PLACEHOLDER -->|Home|" > "$home_page"
+
+    cat "$template_dir/homepage.html" \
+        "$template_dir/page_footer.html" >> "$home_page"
+}
+
+insert_new_post() {
+    title="$1"
+    [ -z "$title" ] && die "insert_new_post: expected title argument"
+
+    filename="$(get_filename "$1")"
+    post="$content_dir/$filename.md"
+    date="$(date "+%s")"
+
+    new_meta="[{
+            \"author\": \"Brendan Dougherty\",
+            \"title\": \"$1\",
+            \"post\": \"$post\",
+            \"uploaded\": \"$date\",
+            \"last_updated\": \"$date\",
+            \"summary\": \"\",
+            \"tags\": []
+        }]"
+
+    insert_new_post_in_meta_file "$new_meta"
+    touch "$post"
+}
+
+gen_pages() {
+    rm -rf "$post_dir/*.html"
+
+    metas="$(get_metas)"
+    for meta in $metas; do
+        title="$(get_field "$meta" "title")"
+        post="$(get_field "$meta" "post")"
+        date="$(get_field "$meta" "uploaded")"
+        uploaded="$(get_post_date "$date")"
+        post_content="$(cmark-gfm "$post" | "$root/scripts/js/highlight_script.js" | sed -e "s|&amp;|\&|g" -e "s|&lt;|\<|g" -e "s|&gt;|\>|g")"
+        filename="$(get_filename "$title")"
+        page="$post_dir/$filename.html"
+        url="$urlroot/blog/posts/$filename.html"
+
+        {
+            sed "$template_dir/page_header.html" \
+                -e "s|<!-- TITLE PLACEHOLDER -->|$title|"
+
+            sed "$template_dir/post_header.html" \
+                -e "s|<!-- UPLOADED PLACEHOLDER -->|$uploaded|" \
+                -e "s|<!-- TITLE PLACEHOLDER -->|$title|"
+
+            printf "%s" "$post_content"
+
+            sed "$template_dir/disqus_thread.html" \
+                -e "s|<!-- PAGE_URL PLACEHOLDER -->|$url|" \
+                -e "s|<!-- PAGE_IDENTIFIER PLACEHOLDER -->|$url|"
+
+            cat "$template_dir/page_footer.html"
+        } > "$page"
+
+    done
+}
+
+gen_blog_index() {
+    blog_index_page="$blog_root/index.html"
+    meta_file="$root/site/meta.json"
+    year=0
+
+    {
+        sed "$template_dir/page_header.html" \
+            -e "s|<!-- TITLE PLACEHOLDER -->|Blog Index|"
+
+        metas="$(get_metas)"
+        for meta in $metas; do
+            title="$(get_field "$meta" "title")"
+            date="$(get_field "$meta" "uploaded")"
+            new_year="$(get_year "$date")"
+            display_date="$(get_index_date "$date")"
+            filename="$(printf "%s" "$title" | tr ' ' '_' | tr '[:upper:]' '[:lower:]').html"
+            link="/blog/posts/$filename"
+
+            if [ "$year" != "$new_year" ]; then
+                printf "        <h4>%s</h4><hr>\n" "$new_year"
+                year="$new_year"
+            fi
+
+            sed "$template_dir/index_entry.html" \
+                -e "s|<!-- LINK PLACEHOLDER -->|$link|" \
+                -e "s|<!-- TITLE PLACEHOLDER -->|$title|" \
+                -e "s|<!-- UPLOADED PLACEHOLDER -->|$display_date|"
+
+        done
+
+        cat "$template_dir/page_footer.html"
+    } > "$blog_index_page"
+}
+
+gen_rss() {
+    rss="$site_root/rss.xml"
+    count=0
+
+    {
+        cat "$template_dir/rss_header.xml"
+
+        metas="$(get_metas)"
+        for meta in $metas; do
+            [ $count = 10 ] && return
+            count=$((count + 1))
+            title="$(get_field "$meta" "title")"
+            filename="$(get_filename "$title").html"
+            page="$urlroot/$filename"
+            date="$(get_field "$meta" "uploaded")"
+            rfc_822_date="$(get_rfc_822 "$date")"
+            summary="$(get_field "$meta" "summary")"
+
+            sed "$template_dir/rss_item.xml" \
+                -e "s|<!-- TITLE PLACEHOLDER -->|$title|" \
+                -e "s|<!-- LINK PLACEHOLDER -->|$page|" \
+                -e "s|<!-- DATE PLACEHOLDER -->|$rfc_822_date|" \
+                -e "s|<!-- SUMMARY PLACEHOLDER -->|$summary|"
+
+            done
+
+            cat "$template_dir/rss_footer.xml"
+    } > "$rss"
+}
+
+gen_sitemap() {
+    sitemap="$site_root/sitemap.xml"
+
+    {
+        cat "$template_dir/sitemap_header.xml"
+
+        metas="$(get_metas)"
+        for meta in $metas; do
+            title="$(get_field "$meta" "title")"
+            filename="$(printf "%s" "$title" | tr ' ' '_' | tr '[:upper:]' '[:lower:]').html"
+            page="$urlroot/$filename"
+            date="$(get_field "$meta" "last_updated")"
+            iso_8601="$(get_iso_8601 "$date")"
+
+            sed "$template_dir/sitemap_item.xml" \
+                -e "s|<!-- URL PLACEHOLDER -->|$page|" \
+                -e "s|<!-- MODIFIED PLACEHOLDER -->|$iso_8601|"
+
+        done
+
+        cat "$template_dir/sitemap_footer.xml"
+    } > "$sitemap"
+}
+
+main() {
+    [ ! -f "$meta_file" ] && {
+        printf "[]" > "$meta_file"
+    }
+
+    IFS="
+"
+
+    case "$1" in
+        "full_update")
+            sort_meta_file
+            gen_homepage
+            gen_pages
+            gen_blog_index
+            gen_rss
+            gen_sitemap
+            ;;
+        "gen_homepage")
+            gen_homepage
+            ;;
+        "new_post")
+            insert_new_post "$2"
+            ;;
+        "gen_pages")
+            sort_meta_file
+            gen_pages
+            ;;
+        "gen_blog_index")
+            sort_meta_file
+            gen_blog_index
+            ;;
+        "gen_rss")
+            sort_meta_file
+            gen_rss
+            ;;
+        "gen_sitemap")
+            sort_meta_file
+            gen_sitemap
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+main "$@"
+

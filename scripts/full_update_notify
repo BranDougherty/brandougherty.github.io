@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# This is a wrapper script for entr to call
+
+root="$(git rev-parse --show-toplevel)"
+meta_file="$root/site/meta.json"
+sum_file="$meta_file.sha256"
+
+get_sha256() {
+    sha256sum "$1" | awk '{print $1}'
+}
+
+[ ! -f "$sum_file" ] && {
+    notify-send "NO SUM"
+    get_sha256 "$meta_file" > "$sum_file"
+}
+
+[ "$(cat "$sum_file")" != "$(get_sha256 "$meta_file")" ] && {
+    get_sha256 "$meta_file" > "$sum_file"
+    "$root/scripts/blog" full_update
+    notify-send "full_update done"
+}
+

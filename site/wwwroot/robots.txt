@@ -1,0 +1,4 @@
+User-agent: *
+Sitemap: https://brandougherty.github.io/sitemap.xml
+Allow: /
+

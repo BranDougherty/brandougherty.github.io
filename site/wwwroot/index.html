@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Home - Brendan Dougherty</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/atelier-lakeside-light.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:700,700italic">
+        <link rel="stylesheet" href="/css/modest.css">
+    </head>
+    <body>
+        <div class="nav">
+            <a href="/"><h4 class="title float-left">Brendan Dougherty</h4></a>
+            <div class="float-right">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/blog">Blog</a>
+                <a class="nav-link" href="/res/resume.pdf">Resume</a>
+                <a class="nav-link" href="mailto:brendantdougherty@gmail.com">Contact</a>
+            </div>
+        </div>
+<script src="/scripts/dom-to-image.min.js"></script>
+<script>
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    document.onload = function() {
+        //await sleep(500);
+
+        domtoimage.toSvg(document.body, {width: document.body.parentNode.clientWidth})
+            .then(function (dataUrl) {
+                var img = new Image();
+                img.src = dataUrl;
+                var dims = document.createTextNode(document.body.parentNode.clientWidth + "x" + document.body.clientHeight);
+                document.body.appendChild(img);
+                document.body.appendChild(dims);
+            })
+            .catch(function (error) {
+                console.error('oops, something went wrong!', error);
+            });
+        }
+</script>
+
+<p>Hi! I'm Brendan Dougherty, a Computer Science student expecting to graduate from Lewis University this Fall. I write code every day, and I'm always looking to improve and share my knowledge. This is my own corner of the internet to talk about those things.</p>
+
+<p>If you're here, you're probably either looking for my <a href="/blog">blog</a>, <a href="/resume.pdf">resume</a>, or <a href="https://github.com/BranDougherty">github</a>. Or, some of my personal projects below may be of interest.</p>
+
+<br>
+
+<h3 class="title">clojurescript-2048</h3>
+<div class="project">
+    <div class="project-preview">
+        <img src="/res/2048.png">
+    </div>
+    <div class="project-info">
+        <p class="project-description">
+            A clone of the <a href="https://play2048.co/">popular game 2048</a> by Gabriele Cirulli, written in ClojureScript. This was my first time doing functional programming. Immutability forced me to adopt a new style, using pure functions and recursion more than I had before. This led to some elegant code, although the UI code was honestly jank. Regardless, this was a good learning experience, and I had fun making the animation system.
+        </p>
+        <p class="project-links">
+            <a class="project-link" target="_blank" href="https://github.com/BranDougherty/clojurescript-2048">Source</a>
+            <a class="project-link" target="_blank" href="https://brandougherty.github.io/clojurescript-2048/">Play</a>
+        </p>
+    </div>
+</div>
+
+<h3 class="title">deflate</h3>
+<div class="project">
+    <div class="project-preview">
+        <img src="/res/2048.png">
+    </div>
+    <div class="project-info">
+        <p class="project-description">
+        A C implementation of a <a href="https://tools.ietf.org/html/rfc1951">deflate</a> compressor and decompressor, including support for the <a href="https://tools.ietf.org/html/rfc1952">GZIP</a> and <a href="https://tools.ietf.org/html/rfc1950">zlib</a> wrapper formats. It's not exactly production ready, but I'm proud of how thoroughly I implemented the RFCs, and how working on this project improved my understanding of compression.
+        </p>
+        <p class="project-links">
+            <a class="project-link" target="_blank" href="https://github.com/BranDougherty/deflate">Source</a>
+        </p>
+    </div>
+</div>
+
+<h3 class="title">clojurescript-2048</h3>
+<div class="project">
+    <div class="project-preview">
+        <img src="/res/2048.png">
+    </div>
+    <div class="project-info">
+        <p class="project-description">
+            This is a clone of the <a href="https://play2048.co/">popular game 2048</a> by Gabriele Cirulli. This was my first time doing functional programming. Immutability forced me to adopt a new style, using pure functions and recursion more than I had before. This led to some elegant code, although the UI code was honestly jank. Regardless, this was a good learning experience, and I had fun making the animation system.
+        </p>
+        <p class="project-links">
+            <a class="project-link" target="_blank" href="https://github.com/BranDougherty/clojurescript-2048">Source</a>
+            <a class="project-link" target="_blank" href="https://brandougherty.github.io/clojurescript-2048/">Play</a>
+        </p>
+    </div>
+</div>
+        <p class="copyright-notice">Copyright Brendan Dougherty 2020.</p>
+    </body>
+</html>
+
