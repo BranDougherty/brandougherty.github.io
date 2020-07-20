@@ -227,8 +227,8 @@ deploy() {
     tmp_dir="$(mktemp -d)"
     cp -r "$site_root" "$tmp_dir"
     git checkout master
-    rm -rf "$root/*"
-    cp -r "$tmp_dir/wwwroot/*" "$root"
+    rm -rf "$root/"*
+    cp -r "$tmp_dir/wwwroot/"* "$root"
     git add --all
 }
 
