@@ -4,20 +4,6 @@
         <title>Brendan Dougherty's Blog</title>
         <link>https://brandougherty.github.io/</link>
         <description>Documenting technical knowledge.</description>
-        <item>
-            <title>third post lmao</title>
-            <link>https://brandougherty.github.io/third_post_lmao.html</link>
-            <guid>https://brandougherty.github.io/third_post_lmao.html</guid>
-            <pubDate>Tue, 14 Jul 2020 10:05:11 -0500</pubDate>
-            <description>third post summary</description>
-        </item>
-        <item>
-            <title>the post</title>
-            <link>https://brandougherty.github.io/the_post.html</link>
-            <guid>https://brandougherty.github.io/the_post.html</guid>
-            <pubDate>Tue, 14 Jul 2020 09:44:40 -0500</pubDate>
-            <description></description>
-        </item>
     </channel>
 </rss>
 
