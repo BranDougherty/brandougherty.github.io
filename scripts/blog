@@ -102,7 +102,7 @@ insert_new_post() {
 }
 
 gen_pages() {
-    rm -rf "$post_dir/*.html"
+    rm -f "$post_dir/*.html"
 
     metas="$(get_metas)"
     for meta in $metas; do
