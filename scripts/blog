@@ -53,12 +53,14 @@ insert_new_post_in_meta_file() {
     tmp_meta_file="$(mktemp)"
     jq ". + $new_meta | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
     mv "$tmp_meta_file" "$meta_file"
+    rm "$tmp_meta_file"
 }
 
 sort_meta_file() {
     tmp_meta_file="$(mktemp)"
     jq ". | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
     mv "$tmp_meta_file" "$meta_file"
+    rm "$tmp_meta_file"
 }
 
 get_metas() {
@@ -230,6 +232,7 @@ deploy() {
     rm -rf "$root/"*
     cp -r "$tmp_dir/wwwroot/"* "$root"
     git add --all
+    rm -rf "$tmp_dir"
 }
 
 main() {
