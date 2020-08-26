@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+set -x
+
 root="$(git rev-parse --show-toplevel)"
 site_root="$root/site/wwwroot"
 blog_root="$site_root/blog"
@@ -53,14 +55,12 @@ insert_new_post_in_meta_file() {
     tmp_meta_file="$(mktemp)"
     jq ". + $new_meta | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
     mv "$tmp_meta_file" "$meta_file"
-    rm "$tmp_meta_file"
 }
 
 sort_meta_file() {
     tmp_meta_file="$(mktemp)"
     jq ". | sort_by(.uploaded) | reverse" "$meta_file" > "$tmp_meta_file"
     mv "$tmp_meta_file" "$meta_file"
-    rm "$tmp_meta_file"
 }
 
 get_metas() {
@@ -110,7 +110,7 @@ gen_pages() {
         post="$(get_field "$meta" "post")"
         date="$(get_field "$meta" "uploaded")"
         uploaded="$(get_post_date "$date")"
-        post_content="$(cmark-gfm "$post" | "$root/scripts/js/highlight_script.js" | sed -e "s|&amp;|\&|g" -e "s|&lt;|\<|g" -e "s|&gt;|\>|g")"
+        post_content="$(md2html "$post" | "$root/scripts/js/highlight_script.js" | sed -e "s|&amp;|\&|g" -e "s|&lt;|\<|g" -e "s|&gt;|\>|g")"
         filename="$(get_filename "$title")"
         page="$post_dir/$filename.html"
         url="$urlroot/blog/posts/$filename.html"
