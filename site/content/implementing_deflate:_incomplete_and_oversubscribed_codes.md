@@ -2,7 +2,7 @@ Deflate's dynamically encoded blocks (block type 2) use custom huffman codes gen
 
 Naive huffman coding implementations may simply serialize the full code, writing information such as the code itself, and bit length for each symbol. However these trees quickly take up large amounts of space, and can result in a net negative for compression.
 
-Deflate is more precise. It transmits only the bit lengths for each symbol, in order, and recomputes the codes in a pre-coordinated way (this general technique is known as canonical huffman coding). The bit lengths are then converted back to the original huffman code. This is done using the principles illustrated by the following animation:
+Deflate is more precise. It transmits only the bit lengths for each symbol, in order, and recomputes the codes in a pre-coordinated way (this general technique is known as canonical huffman coding). This is done using the principles illustrated by the following animation:
 
 ![Converting bit lengths to codes](/res/length_to_code.gif)
 
