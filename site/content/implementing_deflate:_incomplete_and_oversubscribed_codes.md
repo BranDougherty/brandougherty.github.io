@@ -1,16 +1,18 @@
-Deflate's dynamically encoded blocks (block type 2) use custom huffman codes generated on the fly for each block. In order for these codes to then be interpreted, the decompressor must be able to recreate the code, and so the huffman tree must be stored in the file.
+This article is about a fairly niche topic you may encounter when implementing a deflate compressor. I assume you are familiar with huffman coding, but I try to explain the relevant concepts used in deflate.
 
-Naive huffman coding implementations may simply serialize the full code, writing information such as the code itself, and bit length for each symbol. However these trees quickly take up large amounts of space, and can result in a net negative for compression.
+Deflate's dynamically encoded blocks (block type 2) use custom huffman codes generated on the fly for each block. In order for these codes to then be interpreted, the compressor must somehow transmit the custom codes to the decompressor.
 
-Deflate is more precise. It transmits only the bit lengths for each symbol, in order, and recomputes the codes in a pre-coordinated way (this general technique is known as canonical huffman coding). This is done using the principles illustrated by the following animation:
+Naive huffman coding implementations may simply serialize the full code, writing information such as the bit length and code for each symbol. However this information quickly takes up large amounts of space, and can result in a net negative for compression.
+
+Deflate is more precise. The compressor transmits only a set of bit lengths, one for each symbol in an alphabet, in order. The decompressor then recomputes the codes in a pre-coordinated way (this technique is known as canonical huffman coding). This is done using principles illustrated by the following animation:
 
 ![Converting bit lengths to codes](/res/length_to_code.gif)
 
-There are some rules that define an optimal relationship between the lengths of a given code. They are essentially the same properties laid out by David A. Huffman in the famous paper "A Method for the Construction of Minimum Redundancy Codes." For example, no code should go unused. If there is an unused code of length `n`, and a code of length `n + 1` is being used, then the code of length `n + 1` could simply be reassigned to the code of length `n`, and a more optimal code would be produced.
+There are some rules that define an optimal relationship between the lengths of a given code. They are essentially the same properties laid out by David A. Huffman in the famous paper "A Method for the Construction of Minimum Redundancy Codes." For example, no code should go unused. If there is an unused code of length `n`, and a symbol is assigned to a code of length `n + 1`, then the symbol could simply be reassigned to the code of length `n`, and a more optimal code would be produced.
 
 zlib refers to codes with unused bit patterns like this as "incomplete." Although it is possible to produce an incomplete but still correct code, it is considered that no reasonable program would want to do that, and so it is treated as an error.
 
-It is also possible for a code to list too many symbols on the same bit length. For example, since deflate is a binary huffman code, a simple example would be to provide a code with 3 symbols with a bit length of 1.
+It is also possible for a code to list too many symbols on the same bit length. A simple example would be to provide a code with 3 symbols with a bit length of 1. The first symbol could be assigned a code of 0, and the second symbol a code of 1, but the third symbol has no bit pattern of length 1 available to it.
  
  zlib refers to these codes as "over-subscribed," and returns an error for these codes as well, seeing as there is no reasonable way to interpret such a code.
 
@@ -27,7 +29,7 @@ It is also possible for a code to list too many symbols on the same bit length. 
         return -1;                      /* incomplete set */
 </code></pre>
 
-If you trigger either of these errors, you're likely making an error in calculating your bit lengths, or in writing them out to the file. In my case, I made an off-by-one error when calculating `hlen`, and so I wrote out all code lengths except the last, resulting in an incomplete code. This is a point in favor of returning an error on incomplete codes!
+If you trigger either of these errors, you've likely made a mistake in calculating your bit lengths, or in writing them out to the file. In my case, I made an off-by-one error when calculating `hlen`, and so I wrote out all code lengths except the last, resulting in an incomplete code. This is a point in favor of returning an error on incomplete codes!
 
-I would like to take this opportunity to say Mark Adler is a goated baller legend-man and without his consistent presence on StackOverflow, implementing deflate would have taken me much longer.
+To bring this article to a close, I would like to take this opportunity to say Mark Adler is a goated baller legend-man and without his consistent presence on StackOverflow, implementing deflate would have taken me much longer.
 

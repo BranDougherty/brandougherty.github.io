@@ -15,6 +15,8 @@ const codes = document.getElementsByTagName("code");
 for (var i = 0; i < codes.length; i++) {
     if (codes[i].parentNode.nodeName !== "PRE") {
         codes[i].style.backgroundColor = "#f0f0f0";
+        codes[i].style.paddingLeft = "2px";
+        codes[i].style.paddingRight = "2px";
         continue;
     }
 
