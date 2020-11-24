@@ -20,7 +20,7 @@
         </div>
         <p class="date">Aug 25, 2020</p>
         <h3 class="title">Implementing Deflate: Incomplete and Oversubscribed Codes</h3>
-<p>This article is about a fairly niche topic you may encounter when implementing a deflate compressor. I assume you are familiar with huffman coding, but I try to explain the relevant concepts used in deflate.</p>
+<p>This article is about a fairly niche topic you may encounter when implementing a deflate compressor or decompressor. I assume you are familiar with huffman coding, but I try to explain the relevant concepts used in deflate.</p>
 <h4>Background</h4>
 <p>Deflate's dynamically encoded blocks (block type 2) use custom huffman codes generated on the fly for each block. In order for these codes to then be interpreted, the compressor must somehow transmit the custom codes to the decompressor.</p>
 <p>Naive huffman coding implementations may simply serialize the full code, writing information such as the bit length and code for each symbol. However this information quickly takes up large amounts of space, and can result in a net negative for compression.</p>
