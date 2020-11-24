@@ -5,6 +5,13 @@
         <link>https://brandougherty.github.io/blog</link>
         <description>Documenting technical knowledge.</description>
         <item>
+            <title>My First Open Source Contribution: Tracking Down a Simple Mesa Bug</title>
+            <link>https://brandougherty.github.io/my_first_open_source_contribution:_tracking_down_a_simple_mesa_bug.html</link>
+            <guid>https://brandougherty.github.io/my_first_open_source_contribution:_tracking_down_a_simple_mesa_bug.html</guid>
+            <pubDate>Mon, 23 Nov 2020 12:33:18 -0600</pubDate>
+            <description></description>
+        </item>
+        <item>
             <title>Implementing Deflate: Incomplete and Oversubscribed Codes</title>
             <link>https://brandougherty.github.io/implementing_deflate:_incomplete_and_oversubscribed_codes.html</link>
             <guid>https://brandougherty.github.io/implementing_deflate:_incomplete_and_oversubscribed_codes.html</guid>
